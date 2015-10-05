@@ -5,6 +5,8 @@
 // @license     GPL version 3
 // @encoding    utf-8
 // @modified    05/10/2015
+// @updateURL   https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.1/dupan_thunder.meta.js
+// @downloadURL https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.1/dupan_thunder.user.js
 // @include     http://pan.baidu.com/*
 // @include     http://yun.baidu.com/*
 // @exclude     http://yun.baidu.com
