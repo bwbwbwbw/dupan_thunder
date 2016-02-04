@@ -5,8 +5,8 @@
 // @license     GPL version 3
 // @encoding    utf-8
 // @modified    05/10/2015
-// @updateURL   https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.1/dupan_thunder.meta.js
-// @downloadURL https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.1/dupan_thunder.user.js
+// @updateURL   https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.2/dupan_thunder.meta.js
+// @downloadURL https://cdn.rawgit.com/SummerWish/dupan_thunder/0.0.2/dupan_thunder.user.js
 // @include     http://pan.baidu.com/*
 // @include     http://yun.baidu.com/*
 // @exclude     http://yun.baidu.com
@@ -17,8 +17,11 @@
 // @grant       unsafeWindow
 // @grant       GM_setClipboard
 // @run-at      document-end
-// @version     0.0.1
+// @version     0.0.2
 // ==/UserScript==
+
+// Fix in 2016.02 by Breezewish:
+// 修复百度网盘屏蔽问题
 
 /*
  *原作者: 有一份田
@@ -120,6 +123,8 @@ var require= unsafeWindow.require;
         errorMsg = require("common:widget/errorMsg/errorMsg.js");
     }
     var helperMenuBtns=(function(){
+        var helperBtn = $();
+        var helperMenu = $('<div style="display:none;position:fixed;z-index:999999;">');
         var menuTitleArr=['迅雷下载','复制链接','查看链接'],panBtnsArr=[],html='';
         for(var i=0;i<btnClassArr.length;i++){
             var item=btnClassArr[i];
@@ -128,26 +133,23 @@ var require= unsafeWindow.require;
             panBtnsArr=$.merge(panBtnsArr,tmpArr.toArray());
         }
         if(!panBtnsArr.length){return panBtnsArr;}
-        html+='<div id="panHelperMenu" style="display:none;position:fixed;z-index:999999;">';
         html+='<ul class="pull-down-menu" style="display:block;margin:0px;padding:0px;left:0px;top:0px;list-style:none;">';
         for(var i=0;i<menuTitleArr.length;i++){
-            html+='<li><a href="javascript:;" class="panHelperMenuBtn" type="'+i+'"><b>'+menuTitleArr[i]+'</b></a></li>';
+            html+='<li><a href="javascript:;" type="'+i+'"><b>'+menuTitleArr[i]+'</b></a></li>';
         }
-        html+='<li style="display:none;"><a href="' + getApiUrl('getnewversion', 1) + '" target="_blank">';
-        html+='<img id="updateimg" title="有一份田" style="border:none;"/></a></li></ul></div>';
-        $('<div>').html(html).appendTo(document.body);
+        html+='</ul>';
+        $(helperMenu).html(html).appendTo(document.body);
         for (var i = 0; i < panBtnsArr.length; i++) {
             var item = panBtnsArr[i];
-            createHelperBtn(item);
+            helperBtn.push(createHelperBtn(item));
         }
         function createHelperBtn(btn) {
             var newnode=btn.cloneNode(true),html=newnode.innerHTML;
-            $(newnode).attr('id','').attr('href','javascript:void(0)').attr('data-key','downloadhelper').attr('node-type','btn-helper').attr('onclick','').css({width:63}).html(html.replace(/[\u4E00-\u9FA5]{2,4}(\(.*\)|（.*）)?/,'网盘助手')).unbind();
-            var o=$('<div class="panHelperBtn" style="display:inline-block;">').append(newnode)[0];
+            $(newnode).attr('id','').attr('href','javascript:void(0)').attr('onclick','').css({width:63}).html(html.replace(/[\u4E00-\u9FA5]{2,4}(\(.*\)|（.*）)?/,'网盘助手')).unbind();
+            var o=$('<div style="display:inline-block;">').append(newnode)[0];
             btn.parentNode.insertBefore(o, btn.nextSibling);
             return o;
         }
-        var helperBtn = $('.panHelperBtn'),helperMenu = $('#panHelperMenu'),
         menuFun = function() {
             helperDownload($(this).attr('type') || 0);
             helperMenu.hide();
@@ -171,7 +173,7 @@ var require= unsafeWindow.require;
             $(this).hide();
         });
         helperMenu.find('a').css('text-align', 'center');
-        return helperMenu.find('a.panHelperMenuBtn').click(menuFun).toArray();
+        return helperMenu.find('a').click(menuFun).toArray();
     })();
     if(!helperMenuBtns.length){return;}
     checkUpdate();
@@ -345,7 +347,7 @@ var require= unsafeWindow.require;
         _.focusobj.focus();
     }
     function createHelperDialog() {
-        var html = '<div class="dlg-hd b-rlv"title="有一份田"><span title="关闭"id="helperdialogclose"class="dlg-cnr dlg-cnr-r"></span><h3><a href="'+getApiUrl('getnewversion',1)+'"target="_blank"style="color:#000;">'+APPNAME+'&nbsp;' + VERSION + '</a><span id="showbtnbar"style="float:right;margin-right:175px;"><a href="javascript:;"title="点此复制"id="copytext">点此复制</a>（<a href="javascript:;"title="重新获取"id="redlink">重新获取</a>）</span></h3></div><div class="download-mgr-dialog-msg center"id="helperloading"><b>数据赶来中...</b></div><div id="showvcode"style="text-align:center;display:none;"><div class="dlg-bd download-verify"style="text-align:center;margin-top:25px;"><div class="verify-body">请输入验证码：<input type="text"maxlength="4"class="input-code vcode"><img width="100"height="30"src=""alt="验证码获取中"class="img-code"><a class="underline"href="javascript:;">换一张</a></div><div class="verify-error"style="text-align:left;margin-left:84px;"></div></div><br><div><div class="alert-dialog-commands clearfix"><a href="javascript:;"class="sbtn okay postvcode"><b>确定</b></a><a href="javascript:;"class="dbtn cancel"><b>关闭</b></a></div></div></div><div id="showdlink"style="text-align:center;display:none;"><div class="dlg-bd download-verify"><div style="padding:5px 0px;"><b><span id="sharefilename"></span></b></div><input type="text"name="sharedlink"id="sharedlink"class="input-code"maxlength="1024"value=""style="width:500px;border:1px solid #7FADDC;padding:3px;height:24px;"></div><br><div><div class="alert-dialog-commands clearfix"><a href="javascript:;"class="sbtn okay postdownload"><b>直接下载</b></a><a href="javascript:;"class="dbtn cancel"><b>关闭</b></a></div></div></div>',
+        var html = '<div class="dlg-hd b-rlv" title="有一份田"><span title="关闭"id="helperdialogclose"class="dlg-cnr dlg-cnr-r"></span><h3><a href="'+getApiUrl('getnewversion',1)+'"target="_blank"style="color:#000;">'+APPNAME+'&nbsp;' + VERSION + '</a><span id="showbtnbar"style="float:right;margin-right:175px;"><a href="javascript:;"title="点此复制"id="copytext">点此复制</a>（<a href="javascript:;"title="重新获取"id="redlink">重新获取</a>）</span></h3></div><div class="download-mgr-dialog-msg center"id="helperloading"><b>数据赶来中...</b></div><div id="showvcode"style="text-align:center;display:none;"><div class="dlg-bd download-verify"style="text-align:center;margin-top:25px;"><div class="verify-body">请输入验证码：<input type="text"maxlength="4"class="input-code vcode"><img width="100"height="30"src=""alt="验证码获取中"class="img-code"><a class="underline"href="javascript:;">换一张</a></div><div class="verify-error"style="text-align:left;margin-left:84px;"></div></div><br><div><div class="alert-dialog-commands clearfix"><a href="javascript:;"class="sbtn okay postvcode"><b>确定</b></a><a href="javascript:;"class="dbtn cancel"><b>关闭</b></a></div></div></div><div id="showdlink"style="text-align:center;display:none;"><div class="dlg-bd download-verify"><div style="padding:5px 0px;"><b><span id="sharefilename"></span></b></div><input type="text"name="sharedlink"id="sharedlink"class="input-code"maxlength="1024"value=""style="width:500px;border:1px solid #7FADDC;padding:3px;height:24px;"></div><br><div><div class="alert-dialog-commands clearfix"><a href="javascript:;"class="sbtn okay postdownload"><b>直接下载</b></a><a href="javascript:;"class="dbtn cancel"><b>关闭</b></a></div></div></div>',
         o=$('<div class="b-panel download-mgr-dialog helperdialog" style="width:550px;">').html(html).appendTo(document.body);
         o[0].pane = o[0];
         var _ = Pancel ? new Pancel(o[0]) : new disk.ui.Panel(o[0]),vcodeimg = o.find('img')[0],vcodeinput = o.find('.vcode')[0],
